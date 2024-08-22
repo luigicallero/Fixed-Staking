@@ -5,36 +5,37 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract FixedStaking is ERC20 {
     mapping(address => uint) public staked;
-    mapping(address => uint) private stakedFromTS;
+    mapping(address => uint) private stakedSince;
     
-    constructor() ERC20("Fixed Staking", "FIX") {
+    constructor() ERC20("Fixed Staking", "FSTK") {
         _mint(msg.sender,1000000000000000000);
     }
 
-    function stake(uint amount) external {
+    function stakingDeposit(uint amount) external {
         require(amount > 0, "amount is <= 0");
         require(balanceOf(msg.sender) >= amount, "balance is <= amount");
         _transfer(msg.sender, address(this), amount);
         if (staked[msg.sender] > 0) {
-            claim();
+            stakingHarvest();
         }
-        stakedFromTS[msg.sender] = block.timestamp;
+        stakedSince[msg.sender] = block.timestamp;
         staked[msg.sender] += amount;
     }
 
-    function unstake(uint amount) external {
+    function stakingWithdrawall(uint amount) external {
         require(amount > 0, "amount is <= 0");
         require(staked[msg.sender] >= amount, "amount is > staked");
-        claim();
+        stakingHarvest();
         staked[msg.sender] -= amount;
         _transfer(address(this), msg.sender, amount);
     }
 
-    function claim() public {
+    function stakingHarvest() public returns(uint256){
         require(staked[msg.sender] > 0, "staked is <= 0");
-        uint secondsStaked = block.timestamp - stakedFromTS[msg.sender];
-        uint rewards = staked[msg.sender] * secondsStaked / 3.154e7;
+        uint secondsStaked = block.timestamp - stakedSince[msg.sender];
+        uint rewards = staked[msg.sender] * secondsStaked / 3.154e7; // approx a year in seconds
         _mint(msg.sender,rewards);
-        stakedFromTS[msg.sender] = block.timestamp;
+        stakedSince[msg.sender] = block.timestamp;
+        return rewards;
     }
 }
