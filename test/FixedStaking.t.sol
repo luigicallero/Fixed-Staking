@@ -48,14 +48,15 @@ contract ContractTest is Test {
         uint amount = 1000;
         vm.startPrank(bob);
         uint origBalance = fixedStaking.balanceOf(bob);
+        console.log("Bob original balance is: %s FSTK", origBalance);
         fixedStaking.stakingDeposit(amount);
         skip(3600*12); // skipping 3600 seconds (1h) * 12 = 12hs
         uint staked = fixedStaking.staked(bob);
-        console.log("Bob's deposits in this contract is: %s",staked);
+        console.log("Bob's deposits in this contract is: %s FSTK",staked);
         fixedStaking.stakingWithdrawall(1000);
         uint balance = fixedStaking.balanceOf(bob);
         assertEq(balance,1001); // 1000 initially deposited + 1 harvested FSTK
-        console.log("Bob's harvest in this contract is: %s",balance - origBalance);
+        console.log("Bob widthdraws and new balance after 12hs is: %s FSTK",balance);
     }
 
     function testWrongWithdrawal() public {
@@ -63,6 +64,6 @@ contract ContractTest is Test {
         vm.expectRevert();
         fixedStaking.stakingWithdrawall(1000);
         uint staked = fixedStaking.staked(mary);
-        console.log("Mary's deposits in this contract is: %s",staked);
+        console.log("Mary's deposits in this contract is: %s FSTK. Nothing for Mary to withdraw",staked);
     }
 }
